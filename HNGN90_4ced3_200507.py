@@ -95,69 +95,69 @@ regex = re.compile('\d+')
 data=[]
 flag=0
 while 1:
-  dT_list = []
-  t_list = []
-  if Kp < 0.0:		#比例ゲイン
-    Kp += 0.01
-  elif Ki < 0.001:	#積分ゲイン
-    Ki += 0.001
-  elif Kd < 0.5:		#微分ゲイン
-    Kd += 0.01
-
-#### ###				
-  Q=Initial_heat=2000 #initial condition
-  W_heat_max=300 #heater power at 100V (MAX)
-  rCp=3.36  # =(J/K)from H of HNGN82
-  T=Q/rCp-273.15
-#  print("T=Treal=",T)
+  try:
+    dT_list = []
+    t_list = []
+    if Kp < 0.0:		#比例ゲイン
+      Kp += 0.01
+    elif Ki < 0.001:	#積分ゲイン
+      Ki += 0.001
+    elif Kd < 0.5:		#微分ゲイン
+      Kd += 0.01
 	
-  Ttarget=T_target_degC=600 #Target
-  TtargetK=Ttarget+273.15 
-  W_heat=50 #=280,(J/sec) initial condition
-  dQ=0
-	
-	#    data=[]
-  line = ser1.readline()
-  match = regex.findall(str(line))
-  data.append(float(match[1])*60.0+float(match[2])+float(match[3])*0.1)
-  data.append(float(match[4]+"."+match[5]))
-  data.append(float(match[6]+"."+match[7]))
-  data.append(float(match[8]+"."+match[9]))
-  data.append(float(match[10]+"."+match[11]))
-  data.append(float(match[12]+"."+match[13]))
-  data.append(float(match[14]+"."+match[15]))
-  data.append(float(match[16]+"."+match[17]))
-  data.append(float(match[18]+"."+match[19]))
-  data.append(float(match[20]+"."+match[21]))
-  data.append(float(match[22]+"."+match[23]))
-  print(data[2],data[4],data[5])
-  for val in data:
-    flag+=1
-    f.write(str(val)); 
-    if(flag<11): 
-      f.write(", ")
-  f.write("\n")
-  flag=0
+	#### ###				
+    Q=Initial_heat=2000 #initial condition
+    W_heat_max=300 #heater power at 100V (MAX)
+    rCp=3.36  # =(J/K)from H of HNGN82
+    T=Q/rCp-273.15
+    Ttarget=T_target_degC=600 #Target
+    TtargetK=Ttarget+273.15 
+    W_heat=50 #=280,(J/sec) initial condition
+    dQ=0
 
-  #for i in range(int(50/dt)):
-  #  t = i*dt
-#Tc thermo-couple-reading
-  T=data[5] #unit=Cdegree) reading from Tc
-  data=[]
-#  print("T=",f'{T:.4f}')
-  dT=error_T=T-Ttarget
-#  print("dT=",f'{dT:.4f}')
-#  print("Q=",f'{Q:.4f}')
-#  print("W_cool=",f'{W_cool():.4f}')
-#  print("W_heat=",f'{W_heat:.4f}')
-  Kp=0.1; Kd=0.5; Ki=0.0
-  W_heat+= -Kp*(rCp*dT)*dt -Kd*(dQ/dt)*dt -Ki*(dT*dt)
-#  print("W_heat=",f'{W_heat:.4f}')
-  dQ=dt*(W_heat-W_cool())
-#  print("dQ=",f'{dQ:.4f}'+"\n")
-  Q +=dQ
-  T=Q/rCp-273.15
-#++++++ endof target system +++++
+    line = ser1.readline()
+    match = regex.findall(str(line))
+    data.append(float(match[1])*60.0+float(match[2])+float(match[3])*0.1)
+    data.append(float(match[4]+"."+match[5]))
+    data.append(float(match[6]+"."+match[7]))
+    data.append(float(match[8]+"."+match[9]))
+    data.append(float(match[10]+"."+match[11]))
+    data.append(float(match[12]+"."+match[13]))
+    data.append(float(match[14]+"."+match[15]))
+    data.append(float(match[16]+"."+match[17]))
+    data.append(float(match[18]+"."+match[19]))
+    data.append(float(match[20]+"."+match[21]))
+    data.append(float(match[22]+"."+match[23]))
+    print(data[2],data[4],data[5])
+    for val in data:
+      flag+=1
+      f.write(str(val)); 
+      if(flag<11): 
+        f.write(", ")
+      f.write("\n")
+    flag=0
+	
+	 #for i in range(int(50/dt)):
+	 #  t = i*dt
+	#Tc thermo-couple-reading
+    T=data[5] #unit=Cdegree) reading from Tc
+    data=[]
+	#  print("T=",f'{T:.4f}')
+    dT=error_T=T-Ttarget
+	#  print("dT=",f'{dT:.4f}')
+	#  print("Q=",f'{Q:.4f}')
+	#  print("W_cool=",f'{W_cool():.4f}')
+	#  print("W_heat=",f'{W_heat:.4f}')
+    Kp=0.1; Kd=0.5; Ki=0.0
+    W_heat+= -Kp*(rCp*dT)*dt -Kd*(dQ/dt)*dt -Ki*(dT*dt)
+	#  print("W_heat=",f'{W_heat:.4f}')
+    dQ=dt*(W_heat-W_cool())
+	#  print("dQ=",f'{dQ:.4f}'+"\n")
+    Q +=dQ
+    T=Q/rCp-273.15
+  except KeyboardInterrupt:
+    print ('exiting')
+    break
 
 f.close()
 ser1.flush()
