@@ -135,7 +135,7 @@ while 1:
       f.write(str(val)); 
       if(flag<11): 
         f.write(", ")
-      f.write("\n")
+    f.write("\n")
     flag=0
 	
 	 #for i in range(int(50/dt)):
