@@ -94,6 +94,7 @@ Ki = 0.0
 regex = re.compile('\d+')
 data=[]
 flag=0
+W_heat=50 #=280,(J/sec) initial condition
 while 1:
   try:
     dT_list = []
@@ -109,10 +110,9 @@ while 1:
     Q=Initial_heat=2000 #initial condition
     W_heat_max=300 #heater power at 100V (MAX)
     rCp=3.36  # =(J/K)from H of HNGN82
-    T=Q/rCp-273.15
-    Ttarget=T_target_degC=600 #Target
+#     T=Q/rCp-273.15
+    Ttarget=T_target_degC=100 #Target
     TtargetK=Ttarget+273.15 
-    W_heat=50 #=280,(J/sec) initial condition
     dQ=0
 
     line = ser1.readline()
@@ -129,6 +129,7 @@ while 1:
     data.append(float(match[20]+"."+match[21]))
     data.append(float(match[22]+"."+match[23]))
     print(data[2],data[4],data[5])
+    print(line)
     for val in data:
       flag+=1
       f.write(str(val)); 
@@ -140,21 +141,33 @@ while 1:
 	 #for i in range(int(50/dt)):
 	 #  t = i*dt
 	#Tc thermo-couple-reading
-    T=data[5] #unit=Cdegree) reading from Tc
+    T=data[4] #unit=Cdegree) reading from Tc
+    print (data)
     data=[]
 	#  print("T=",f'{T:.4f}')
+    print("T=",T)
     dT=error_T=T-Ttarget
-	#  print("dT=",f'{dT:.4f}')
-	#  print("Q=",f'{Q:.4f}')
-	#  print("W_cool=",f'{W_cool():.4f}')
-	#  print("W_heat=",f'{W_heat:.4f}')
+    print("dT=",dT)
+    Q=(T+273.15)/rCp
+#    print("Q=",Q)
+    print("W_cool=",W_cool())
+    print("W_heat=",W_heat)
     Kp=0.1; Kd=0.5; Ki=0.0
-    W_heat+= -Kp*(rCp*dT)*dt -Kd*(dQ/dt)*dt -Ki*(dT*dt)
-	#  print("W_heat=",f'{W_heat:.4f}')
-    dQ=dt*(W_heat-W_cool())
-	#  print("dQ=",f'{dQ:.4f}'+"\n")
-    Q +=dQ
-    T=Q/rCp-273.15
+#    W_heat= -Kp*(rCp*dT)*dt -Kd*(dQ/dt)*dt -Ki*(dT*dt)
+#    W_heat= -Kp*(rCp*dT) -Kd*(W_heat) -Ki*(W_heat)
+    W_heat= -(7.0)*dT
+    print("W_heat=",W_heat)
+#    dQ=dt*(W_heat-W_cool())
+#    dQ=dt*(W_heat)
+#    print("dQ=",dQ,"\n")
+#    Q +=dQ
+#    T=Q/rCp-273.15
+    if (W_heat > W_heat_max):
+      val=255
+    else:        
+      val=int(W_heat/W_heat_max*255)%256		
+    a = val.to_bytes(1, byteorder="little")
+    ser2.write(a)
   except KeyboardInterrupt:
     print ('exiting')
     break
